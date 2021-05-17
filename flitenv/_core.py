@@ -52,3 +52,19 @@ class Env(typing.NamedTuple):
         except SystemExit as exc:
             return exc.code
         return 0
+
+    def run(self, exe, *cmd: str) -> int:
+        venv = VEnv(path=self.path)
+        bin_path = venv.bin_path
+        if not bin_path:
+            code = self.install()
+            if code != 0:
+                return code
+
+        venv = VEnv(path=self.path)
+        bin_path = venv.bin_path
+        assert bin_path
+        full_cmd = [str(bin_path / exe)]
+        full_cmd.extend(cmd)
+        result = subprocess.run(full_cmd)
+        return result.returncode
