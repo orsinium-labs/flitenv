@@ -1,4 +1,5 @@
 import sys
+import subprocess
 import typing
 from argparse import ArgumentParser
 from pathlib import Path
@@ -6,7 +7,31 @@ from pathlib import Path
 from ._core import Env
 
 
+def lock(constr: Path) -> int:
+    tmp = Path('_tmp_requirements.in')
+    tmp.write_text(f'-c {constr}')
+    cmd = [
+        sys.executable, '-m', 'piptools', 'compile',
+        '--annotate',
+        '--generate-hashes',
+        '--no-header',
+        '--no-emit-index-url',
+        '--output-file', 'requirements.txt',
+        str(tmp),
+        'pyproject.toml',
+    ]
+    result = subprocess.run(cmd)
+    tmp.unlink()
+    return result.returncode
+
+
 def main(argv: typing.List[str], stream: typing.TextIO) -> int:
+    if argv and argv[0] == 'lock':
+        parser = ArgumentParser()
+        parser.add_argument('constr')
+        args = parser.parse_args(argv[1:])
+        return lock(args.constr)
+
     parser = ArgumentParser()
     parser.add_argument('env')
     parser.add_argument('cmd', choices=['install', 'run'])
