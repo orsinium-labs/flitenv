@@ -31,7 +31,7 @@ requires = [
 lint = ["flake8", "isort", "mypy"]
 
 [tool.flit.scripts]
-confs = "flitenv:entrypoint"
+flitenv = "flitenv:entrypoint"
 
 [tool.isort]
 profile = "django"
