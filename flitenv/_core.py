@@ -1,6 +1,6 @@
-import typing
 import subprocess
 import sys
+import typing
 from pathlib import Path
 
 import flit
@@ -44,7 +44,7 @@ class Env(typing.NamedTuple):
             print('installing project deps...', file=self.stream)
             flit.main([
                 'install',
-                '--python', venv.python_path,
+                '--python', str(venv.python_path),
                 '--deps', 'production',
                 '--extras', self.name,
                 '--symlink',

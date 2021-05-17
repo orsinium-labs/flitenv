@@ -23,12 +23,15 @@ classifiers=[
 ]
 
 requires = [
-    "astroid",
-    "z3-solver",
+    "flit",
+    "dephell-venvs",
 ]
 
 [tool.flit.metadata.requires-extra]
 lint = ["flake8", "isort", "mypy"]
+
+[tool.flit.scripts]
+confs = "flitenv:entrypoint"
 
 [tool.isort]
 profile = "django"
