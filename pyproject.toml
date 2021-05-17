@@ -25,6 +25,7 @@ classifiers=[
 requires = [
     "flit",
     "dephell-venvs",
+    "pip-tools",
 ]
 
 [tool.flit.metadata.requires-extra]

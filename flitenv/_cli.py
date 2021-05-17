@@ -1,5 +1,5 @@
-import sys
 import subprocess
+import sys
 import typing
 from argparse import ArgumentParser
 from pathlib import Path
@@ -49,9 +49,10 @@ def main(argv: typing.List[str], stream: typing.TextIO) -> int:
         args = parser.parse_args(argv)
         return env.install()
     if args.cmd == 'run':
-        parser.add_argument('args', nargs='+')
+        parser.add_argument('exe')
+        parser.add_argument('args', nargs='...')
         args = parser.parse_args(argv)
-        return env.run(*args.args)
+        return env.run(args.exe, *args.args)
     raise RuntimeError('unreachable')
 
 
