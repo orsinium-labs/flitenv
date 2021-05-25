@@ -41,14 +41,16 @@ class Env(typing.NamedTuple):
             self._pip_install('-r', str(constr))
 
         try:
-            print('installing project deps...', file=self.stream)
-            flit.main([
+            cmd = [
                 'install',
                 '--python', str(venv.python_path),
                 '--deps', 'production',
-                '--extras', self.name,
                 '--symlink',
-            ])
+            ]
+            if self.name != 'prod':
+                cmd.extend(['--extras', self.name])
+            print('installing project deps...', file=self.stream)
+            flit.main(cmd)
         except SystemExit as exc:
             return exc.code
         return 0

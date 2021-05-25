@@ -2,3 +2,4 @@ __pycache__/
 .venvs/
 .mypy_cache/
 /dist/
+*.egg-info/
