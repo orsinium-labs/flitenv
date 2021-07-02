@@ -36,6 +36,9 @@ lint = [
     "mypy",
     "types-toml",
 ]
+test = [
+    "pytest",
+]
 
 [tool.flit.scripts]
 flitenv = "flitenv:entrypoint"

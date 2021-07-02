@@ -8,33 +8,15 @@ import toml
 from ._core import Env, MAIN_ENV
 
 
-def cmd_lock(args, stream: typing.TextIO) -> int:
-    env = Env(
-        name=args.env,
-        root=args.root,
-        venvs=args.venvs,
-        stream=stream,
-    )
+def cmd_lock(env: Env, args) -> int:
     return env.lock(constraint=args.constraint)
 
 
-def cmd_install(args, stream: typing.TextIO) -> int:
-    env = Env(
-        name=args.env,
-        root=args.root,
-        venvs=args.venvs,
-        stream=stream,
-    )
+def cmd_install(env: Env, args) -> int:
     return env.install()
 
 
-def cmd_run(args, stream: typing.TextIO) -> int:
-    env = Env(
-        name=args.env,
-        root=args.root,
-        venvs=args.venvs,
-        stream=stream,
-    )
+def cmd_run(env: Env, args) -> int:
     return env.run(args.exe, *args.args)
 
 
@@ -86,7 +68,13 @@ def main(argv: typing.List[str], stream: typing.TextIO) -> int:
     run_parser.set_defaults(func=cmd_run)
 
     args = parser.parse_args(argv)
-    return args.func(args=args, stream=stream)
+    env = Env(
+        name=args.env,
+        root=args.root,
+        venvs=args.venvs,
+        stream=stream,
+    )
+    return args.func(env=env, args=args)
 
 
 def entrypoint() -> typing.NoReturn:

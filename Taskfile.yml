@@ -1,0 +1,29 @@
+# https://taskfile.dev/#/
+version: '3'
+
+vars:
+  PYTHON: python3
+env:
+  FLIT_ROOT_INSTALL: "1"
+
+tasks:
+  install:base:
+    status:
+      - test -f .venvs/base/bin/flitenv
+    cmds:
+      - "{{.PYTHON}} -m venv .venvs/base"
+      - .venvs/base/bin/python3 -m pip install -U flit
+      - .venvs/base/bin/flit install --symlink
+  install:test:
+    sources:
+      - pyproject.toml
+    deps:
+      - install:base
+    cmds:
+      - .venvs/base/bin/python3 -m flitenv test install
+  pytest:run:
+    desc: "run Python tests"
+    deps:
+      - install:test
+    cmds:
+      - .venvs/base/bin/python3 -m flitenv test run pytest {{.ARGS}} {{.TESTS_PATH}}

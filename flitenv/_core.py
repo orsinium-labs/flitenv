@@ -18,6 +18,9 @@ class Env(typing.NamedTuple):
 
     @property
     def path(self) -> Path:
+        path = Path(self.venvs)
+        if path.is_absolute():
+            return path / self.name
         return self.root / self.venvs / self.name
 
     def _pip_install(self, *args):
@@ -28,7 +31,7 @@ class Env(typing.NamedTuple):
         result.check_returncode()
 
     @property
-    def constraints(self) -> Path:
+    def constraint(self) -> Path:
         name = 'requirements.txt'
         if self.name != MAIN_ENV:
             name = f'requirements-{self.name}.txt'
@@ -45,7 +48,7 @@ class Env(typing.NamedTuple):
         if not (bin_path / 'wheel').exists():
             print('installing wheel...', file=self.stream)
             self._pip_install('pip', 'wheel', 'setuptools')
-        constr = self.constraints
+        constr = self.constraint
         if constr.exists():
             print('installing requirements.txt...', file=self.stream)
             self._pip_install('-r', str(constr))
@@ -91,7 +94,7 @@ class Env(typing.NamedTuple):
             '--generate-hashes',
             '--no-header',
             '--no-emit-index-url',
-            '--output-file', 'requirements.txt',
+            '--output-file', str(self.constraint),
             'pyproject.toml',
         ]
         if self.name != MAIN_ENV:
