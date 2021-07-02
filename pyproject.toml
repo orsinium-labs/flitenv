@@ -26,10 +26,16 @@ requires = [
     "flit",
     "dephell-venvs",
     "pip-tools",
+    "toml",
 ]
 
 [tool.flit.metadata.requires-extra]
-lint = ["flake8", "isort", "mypy"]
+lint = [
+    "flake8",
+    "isort",
+    "mypy",
+    "types-toml",
+]
 
 [tool.flit.scripts]
 flitenv = "flitenv:entrypoint"
