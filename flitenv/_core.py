@@ -30,11 +30,12 @@ class Env(typing.NamedTuple):
         result = subprocess.run(cmd, stdout=subprocess.DEVNULL)
         result.check_returncode()
 
-    @property
-    def constraint(self) -> Path:
+    def _get_constraint(self, env_name: str = '') -> Path:
+        if not env_name:
+            env_name = self.name
         name = 'requirements.txt'
-        if self.name != MAIN_ENV:
-            name = f'requirements-{self.name}.txt'
+        if env_name != MAIN_ENV:
+            name = f'requirements-{env_name}.txt'
         return self.root / name
 
     def install(self) -> int:
@@ -47,8 +48,10 @@ class Env(typing.NamedTuple):
         assert bin_path
         if not (bin_path / 'wheel').exists():
             print('installing wheel...', file=self.stream)
-            self._pip_install('pip', 'wheel', 'setuptools')
-        constr = self.constraint
+            self._pip_install('-U', 'pip', 'wheel', 'setuptools')
+        constr = self._get_constraint()
+        if not constr.exists():
+            constr = self._get_constraint(MAIN_ENV)
         if constr.exists():
             print('installing requirements.txt...', file=self.stream)
             self._pip_install('-r', str(constr))
@@ -94,7 +97,7 @@ class Env(typing.NamedTuple):
             '--generate-hashes',
             '--no-header',
             '--no-emit-index-url',
-            '--output-file', str(self.constraint),
+            '--output-file', str(self._get_constraint()),
             'pyproject.toml',
         ]
         if self.name != MAIN_ENV:
