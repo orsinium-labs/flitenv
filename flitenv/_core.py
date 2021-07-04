@@ -25,7 +25,7 @@ class Env(typing.NamedTuple):
 
     def _pip_install(self, *args):
         venv = VEnv(path=self.path)
-        cmd = [str(venv.python_path), '-m', 'pip', 'install', '-U']
+        cmd = [str(venv.python_path), '-m', 'pip', 'install']
         cmd.extend(args)
         result = subprocess.run(cmd, stdout=subprocess.DEVNULL)
         result.check_returncode()
