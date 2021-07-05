@@ -112,7 +112,6 @@ class Env(typing.NamedTuple):
         cmd = [
             sys.executable, '-m', 'piptools', 'compile',
             '--annotate',
-            '--generate-hashes',
             '--no-header',
             '--no-emit-index-url',
             '--output-file', str(self._get_constraint()),
