@@ -36,8 +36,11 @@ class Env(typing.NamedTuple):
             return path / self.name
         return self.root / self.venvs / self.name
 
+    def _get_venv(self) -> VEnv:
+        return VEnv(path=self.path)
+
     def _pip_install(self, *args):
-        venv = VEnv(path=self.path)
+        venv = self._get_venv()
         cmd = [str(venv.python_path), '-m', 'pip', 'install']
         cmd.extend(args)
         result = subprocess.run(cmd, stdout=subprocess.DEVNULL)
@@ -52,7 +55,7 @@ class Env(typing.NamedTuple):
         return self.root / name
 
     def install(self) -> int:
-        venv = VEnv(path=self.path)
+        venv = self._get_venv()
         if not venv.exists():
             print('creating venv...', file=self.stream)
             venv.create()
@@ -87,14 +90,14 @@ class Env(typing.NamedTuple):
         return 0
 
     def run(self, exe, *cmd: str) -> int:
-        venv = VEnv(path=self.path)
+        venv = self._get_venv()
         bin_path = venv.bin_path
         if not bin_path:
             code = self.install()
             if code != 0:
                 return code
 
-        venv = VEnv(path=self.path)
+        venv = self._get_venv()
         bin_path = venv.bin_path
         assert bin_path
         full_cmd = [str(bin_path / exe)]
