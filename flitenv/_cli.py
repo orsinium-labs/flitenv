@@ -20,6 +20,12 @@ def cmd_run(env: Env, args) -> int:
     return env.run(args.exe, *args.args)
 
 
+def cmd_version(env: Env, args) -> int:
+    from . import __version__
+    print(__version__, file=env.stream)
+    return 0
+
+
 def get_envs() -> typing.Optional[typing.List[str]]:
     path = Path('pyproject.toml')
     if not path.exists():
@@ -44,7 +50,7 @@ def main(argv: typing.List[str], stream: typing.TextIO) -> int:
     parser.add_argument('env', choices=get_envs())  # type: ignore
     parser.add_argument('--root', type=Path, default=Path())
     parser.add_argument('--venvs', default='.venvs')
-    subparsers = parser.add_subparsers()
+    subparsers = parser.add_subparsers(dest='cmd')
 
     lock_parser = subparsers.add_parser(
         name='lock',
@@ -67,7 +73,16 @@ def main(argv: typing.List[str], stream: typing.TextIO) -> int:
     run_parser.add_argument('args', nargs='...')
     run_parser.set_defaults(func=cmd_run)
 
+    version_parser = subparsers.add_parser(
+        name='version',
+        help='print flitenv version and exit',
+    )
+    version_parser.set_defaults(func=cmd_version)
+
     args = parser.parse_args(argv)
+    if args.cmd is None:
+        print('command required', file=stream)
+        return 1
     env = Env(
         name=args.env,
         root=args.root,
