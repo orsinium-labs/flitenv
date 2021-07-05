@@ -26,4 +26,4 @@ tasks:
     deps:
       - install:test
     cmds:
-      - .venvs/base/bin/python3 -m flitenv test run pytest {{.ARGS}} {{.TESTS_PATH}}
+      - .venvs/base/bin/python3 -m flitenv test run pytest {{.CLI_ARGS}}

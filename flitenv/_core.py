@@ -1,3 +1,5 @@
+from contextlib import contextmanager
+import os
 import subprocess
 import sys
 import typing
@@ -8,6 +10,17 @@ from dephell_venvs import VEnv
 
 
 MAIN_ENV = 'main'
+
+
+@contextmanager
+def update_env(**kwargs: str):
+    old_env = dict(os.environ)
+    os.environ.update(kwargs)
+    try:
+        yield
+    finally:
+        os.environ.clear()
+        os.environ.update(old_env)
 
 
 class Env(typing.NamedTuple):
@@ -49,12 +62,13 @@ class Env(typing.NamedTuple):
         if not (bin_path / 'wheel').exists():
             print('installing wheel...', file=self.stream)
             self._pip_install('-U', 'pip', 'wheel', 'setuptools')
+
+        env = {}
         constr = self._get_constraint()
         if not constr.exists():
             constr = self._get_constraint(MAIN_ENV)
         if constr.exists():
-            print('installing requirements.txt...', file=self.stream)
-            self._pip_install('-r', str(constr))
+            env['PIP_CONSTRAINT'] = str(constr)
 
         try:
             cmd = [
@@ -66,7 +80,8 @@ class Env(typing.NamedTuple):
             if self.name != MAIN_ENV:
                 cmd.extend(['--extras', self.name])
             print('installing project deps...', file=self.stream)
-            flit.main(cmd)
+            with update_env(**env):
+                flit.main(cmd)
         except SystemExit as exc:
             return exc.code
         return 0
