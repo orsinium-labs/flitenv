@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import sys
 import typing
 from argparse import ArgumentParser
@@ -42,14 +44,13 @@ def get_envs() -> typing.Optional[typing.List[str]]:
         envs = meta['requires-extra']
     except KeyError:
         return [MAIN_ENV]
-    return [MAIN_ENV] + sorted(envs)
+    return [MAIN_ENV, *sorted(envs)]
 
 
 def main(argv: typing.List[str], stream: typing.TextIO) -> int:
 
     parser = ArgumentParser()
-    parser.format_help
-    parser.add_argument('env', choices=get_envs())  # type: ignore
+    parser.add_argument('env', choices=get_envs())
     parser.add_argument('--root', type=Path, default=Path())
     parser.add_argument('--venvs', type=Path)
     subparsers = parser.add_subparsers(dest='cmd')

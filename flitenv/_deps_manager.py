@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import subprocess
 import sys
@@ -76,7 +78,7 @@ class DepsManager:
             with update_env(**env):
                 flit.main(cmd)
         except SystemExit as exc:
-            return exc.code
+            return int(exc.code or 0)
         return 0
 
     def run(self, exe, *cmd: str) -> int:
