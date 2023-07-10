@@ -4,8 +4,8 @@ from argparse import ArgumentParser
 
 from .._constants import MAIN_ENV
 from .._deps_manager import DepsManager
+from .._meta import get_envs
 from .._venv import VEnv
-from .._venvs import get_envs
 from ._base import Command
 
 
