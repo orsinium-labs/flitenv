@@ -160,6 +160,7 @@ class DepsManager:
             '--annotate',
             '--no-header',
             '--no-emit-index-url',
+            '--strip-extras',
             '--output-file', str(self._get_constraint()),
             'pyproject.toml',
         ]
