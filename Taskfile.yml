@@ -15,24 +15,6 @@ tasks:
       - "{{.PYTHON}} -m venv .venvs/base"
       - .venvs/base/bin/python3 -m pip install -U flit
       - .venvs/base/bin/flit install --symlink --deps=production
-  install:test:
-    sources:
-      - pyproject.toml
-    status:
-      - test -f .venvs/test/bin/pytest
-    deps:
-      - install:base
-    cmds:
-      - "{{.FLITENV}} install test"
-  install:lint:
-    sources:
-      - pyproject.toml
-    status:
-      - test -f .venvs/lint/bin/flake8
-    deps:
-      - install:base
-    cmds:
-      - "{{.FLITENV}} install lint"
 
   release:
     desc: generate and upload a new release
@@ -52,44 +34,44 @@ tasks:
   pytest:
     desc: "run Python tests"
     deps:
-      - install:test
+      - install:base
     cmds:
       - "{{.FLITENV}} run test pytest {{.CLI_ARGS}}"
   flake8:
     desc: "lint Python code"
     deps:
-      - install:lint
+      - install:base
     cmds:
       - "{{.FLITENV}} run lint flake8 {{.CLI_ARGS}} ."
   ruff:
     desc: "lint Python code"
     deps:
-      - install:lint
+      - install:base
     cmds:
       - "{{.FLITENV}} run lint ruff check {{.CLI_ARGS}} ."
   ruff:fix:
     desc: "fix all possible ruff violations"
     deps:
-      - install:lint
+      - install:base
     cmds:
       - "{{.FLITENV}} run lint ruff check --fix-only {{.CLI_ARGS}} ."
 
   mypy:
     desc: "check type annotations"
     deps:
-      - install:lint
+      - install:base
     cmds:
       - "{{.FLITENV}} run lint mypy {{.CLI_ARGS}}"
   isort:
     desc: "sort imports"
     deps:
-      - install:lint
+      - install:base
     cmds:
       - "{{.FLITENV}} run lint isort {{.CLI_ARGS}} ."
   isort:check:
     desc: "sort imports"
     deps:
-      - install:lint
+      - install:base
     cmds:
       - "{{.FLITENV}} run lint isort --check {{.CLI_ARGS}} ."
 
