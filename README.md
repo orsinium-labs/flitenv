@@ -32,12 +32,12 @@ Basics:
 
 Below are usage examples. Each example uses `lint` as the target environment and `flake8` as a command we want to run in this environment.
 
-+ `flitenv lint install`: install dependencies. If the venv doesn't exist, it will be created. Can also be used to upgrade dependencies when the lock file has been changed.
-+ `flitenv lint run flake8`: run a command. If the venv doesn't exist, it will be created, and the dependencies will be installed.
-+ `flitenv lint lock`: generate lock file (`requirements-lint.txt`) for the env.
++ `flitenv install lint`: install dependencies. If the venv doesn't exist, it will be created. Can also be used to upgrade dependencies when the lock file has been changed.
++ `flitenv run lint flake8`: run a command. If the venv doesn't exist, it will be created, and the dependencies will be installed.
++ `flitenv lock lint`: generate lock file (`requirements-lint.txt`) for the env.
 + `flitenv main lock`: generate lock file (`requirements.txt`) for the `main` env. If there is no env-specific lock file, this one will be used instead.
 + `flitenv main lock -c ../other-project/requirements.txt`: generate lock file using lock file from another project as a reference. It allows to ensure compatibility of lock files accross multiple projects.
 + `rm requirements.txt && flitenv main lock`: upgrade all dependencies in the lock file.
-+ `rm -rf .venvs/lint && flitenv lint install`: re-create the venv. It is usefult to ensure that all old dependencies.
++ `rm -rf .venvs/lint && flitenv install lint`: re-create the venv. It is usefult to ensure that all old dependencies.
 + `flit build`: build a distribution for the project.
 + `flit install --symlink --python $(which python3.9) --deps=none`: symlink the project into the given Python interpreter without installing dependencies. It is helpful if you want to have nice go-to-definition in vscode across multiple projects.

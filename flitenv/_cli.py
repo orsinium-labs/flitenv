@@ -10,7 +10,14 @@ from .commands import Command, commands
 
 def main(argv: list[str], stdout: typing.TextIO) -> int:
     parser = ArgumentParser('mypy-baseline')
-    parser.add_argument('--root', type=Path, default=Path())
+    parser.add_argument(
+        '--root', type=Path, default=Path(),
+        help='Path to the project root.',
+    )
+    parser.add_argument(
+        '--venvs', type=Path,
+        help='Path to venvs directory. Defaults to .venvs in the project root.',
+    )
     subparsers = parser.add_subparsers()
     parser.set_defaults(cmd=None)
 

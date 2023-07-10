@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from argparse import ArgumentParser
 
+from .._constants import MAIN_ENV
+from .._deps_manager import DepsManager
+from .._meta import get_envs
+from .._venv import VEnv
 from ._base import Command
 
 
@@ -11,9 +15,19 @@ class Run(Command):
 
     @staticmethod
     def init_parser(parser: ArgumentParser) -> None:
-        Command.init_parser(parser)
+        parser.add_argument('env', choices=get_envs())
         parser.add_argument('exe')
         parser.add_argument('args', nargs='...')
 
     def run(self) -> int:
-        return self.deps.run(self.args.exe, *self.args.args)
+        venv = VEnv(
+            name=self.args.env or MAIN_ENV,
+            root=self.args.root,
+            venvs=self.args.venvs,
+        )
+        deps = DepsManager(
+            root=self.args.root,
+            venv=venv,
+            stream=self.stdout,
+        )
+        return deps.run(self.args.exe, *self.args.args)
