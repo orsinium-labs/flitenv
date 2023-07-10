@@ -1,5 +1,5 @@
 # https://taskfile.dev/#/
-version: '3'
+version: "3"
 
 vars:
   PYTHON: python3
@@ -17,6 +17,8 @@ tasks:
   install:test:
     sources:
       - pyproject.toml
+    status:
+      - test -f .venvs/test/bin/pytest
     deps:
       - install:base
     cmds:

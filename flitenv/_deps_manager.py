@@ -1,15 +1,15 @@
-from contextlib import contextmanager
 import os
 import subprocess
 import sys
-import typing
+from contextlib import contextmanager
+from dataclasses import dataclass
 from pathlib import Path
+from typing import TextIO
 
 import flit
-from dephell_venvs import VEnv
 
-
-MAIN_ENV = 'main'
+from ._constants import MAIN_ENV
+from ._venv import VEnv
 
 
 @contextmanager
@@ -23,49 +23,38 @@ def update_env(**kwargs: str):
         os.environ.update(old_env)
 
 
-class Env(typing.NamedTuple):
+@dataclass(frozen=True)
+class DepsManager:
     root: Path
-    name: str
-    venvs: str = '.venvs'
-    stream: typing.TextIO = sys.stdout
+    venv: VEnv
+    stream: TextIO = sys.stdout
 
-    @property
-    def path(self) -> Path:
-        path = Path(self.venvs)
-        if path.is_absolute():
-            return path / self.name
-        return self.root / self.venvs / self.name
-
-    def _get_venv(self) -> VEnv:
-        return VEnv(path=self.path)
-
-    def _pip_install(self, *args):
-        venv = self._get_venv()
-        cmd = [str(venv.python_path), '-m', 'pip', 'install']
+    def _pip_install(self, *args: str) -> None:
+        cmd = [str(self.venv.python_path), '-m', 'pip', 'install']
         cmd.extend(args)
         result = subprocess.run(cmd, stdout=subprocess.DEVNULL)
         result.check_returncode()
 
     def _get_constraint(self, env_name: str = '') -> Path:
         if not env_name:
-            env_name = self.name
+            env_name = self.venv.name
         name = 'requirements.txt'
         if env_name != MAIN_ENV:
             name = f'requirements-{env_name}.txt'
         return self.root / name
 
     def install(self) -> int:
-        venv = self._get_venv()
-        if not venv.exists():
+        # create venv if does not exist
+        if not self.venv.exists:
             print('creating venv...', file=self.stream)
-            venv.create()
+            self.venv.create()
 
-        bin_path = venv.bin_path
-        assert bin_path
-        if not (bin_path / 'wheel').exists():
+        # install wheel if not installed
+        if not (self.venv.bin_path / 'wheel').exists():
             print('installing wheel...', file=self.stream)
             self._pip_install('-U', 'pip', 'wheel', 'setuptools')
 
+        # use constraints file if available
         env = {}
         constr = self._get_constraint()
         if not constr.exists():
@@ -73,15 +62,16 @@ class Env(typing.NamedTuple):
         if constr.exists():
             env['PIP_CONSTRAINT'] = str(constr)
 
+        # install dependencies with flit
         try:
             cmd = [
                 'install',
-                '--python', str(venv.python_path),
+                '--python', str(self.venv.python_path),
                 '--deps', 'production',
                 '--symlink',
             ]
-            if self.name != MAIN_ENV:
-                cmd.extend(['--extras', self.name])
+            if self.venv.name != MAIN_ENV:
+                cmd.extend(['--extras', self.venv.name])
             print('installing project deps...', file=self.stream)
             with update_env(**env):
                 flit.main(cmd)
@@ -90,17 +80,13 @@ class Env(typing.NamedTuple):
         return 0
 
     def run(self, exe, *cmd: str) -> int:
-        venv = self._get_venv()
-        bin_path = venv.bin_path
+        bin_path = self.venv.bin_path
         if not bin_path:
             code = self.install()
             if code != 0:
                 return code
 
-        venv = self._get_venv()
-        bin_path = venv.bin_path
-        assert bin_path
-        full_cmd = [str(bin_path / exe)]
+        full_cmd = [str(self.venv.bin_path / exe)]
         full_cmd.extend(cmd)
         result = subprocess.run(full_cmd)
         return result.returncode
@@ -117,8 +103,8 @@ class Env(typing.NamedTuple):
             '--output-file', str(self._get_constraint()),
             'pyproject.toml',
         ]
-        if self.name != MAIN_ENV:
-            cmd.extend(['--extra', self.name])
+        if self.venv.name != MAIN_ENV:
+            cmd.extend(['--extra', self.venv.name])
         if constraint:
             cmd.append(str(tmp))
 
