@@ -94,7 +94,11 @@ class DepsManager:
         else:
             full_cmd = [str(self.venv.python_path), '-m', exe]
         full_cmd.extend(cmd)
-        result = subprocess.run(full_cmd)
+        try:
+            result = subprocess.run(full_cmd)
+        except KeyboardInterrupt:
+            print('KeyboardInterrupt', file=self.stream)
+            return 1
         return result.returncode
 
     def lock(self, constraint: str) -> int:
