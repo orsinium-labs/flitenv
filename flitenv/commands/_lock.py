@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from argparse import ArgumentParser
 
+from .._venvs import get_envs
 from ._base import Command
 
 
@@ -11,7 +12,7 @@ class Lock(Command):
 
     @staticmethod
     def init_parser(parser: ArgumentParser) -> None:
-        Command.init_parser(parser)
+        parser.add_argument('env', choices=get_envs())
         parser.add_argument('-c', '--constraint')
 
     def run(self) -> int:

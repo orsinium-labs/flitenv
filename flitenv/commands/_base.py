@@ -3,12 +3,10 @@ from __future__ import annotations
 from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass
 from functools import cached_property
-from pathlib import Path
 from typing import ClassVar, TextIO
 
 from .._deps_manager import DepsManager
 from .._venv import VEnv
-from .._venvs import get_envs
 
 
 @dataclass
@@ -19,8 +17,7 @@ class Command:
 
     @staticmethod
     def init_parser(parser: ArgumentParser) -> None:
-        parser.add_argument('env', choices=get_envs())
-        parser.add_argument('--venvs', type=Path)
+        pass
 
     def run(self) -> int:
         raise NotImplementedError

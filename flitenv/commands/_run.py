@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from argparse import ArgumentParser
 
+from .._venvs import get_envs
 from ._base import Command
 
 
@@ -11,7 +12,7 @@ class Run(Command):
 
     @staticmethod
     def init_parser(parser: ArgumentParser) -> None:
-        Command.init_parser(parser)
+        parser.add_argument('env', choices=get_envs())
         parser.add_argument('exe')
         parser.add_argument('args', nargs='...')
 
