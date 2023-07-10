@@ -5,99 +5,29 @@ import typing
 from argparse import ArgumentParser
 from pathlib import Path
 
-import toml
-
-from ._constants import MAIN_ENV
-from ._deps_manager import DepsManager
-from ._venv import VEnv
+from .commands import Command, commands
 
 
-def cmd_lock(deps: DepsManager, args) -> int:
-    return deps.lock(constraint=args.constraint)
-
-
-def cmd_install(deps: DepsManager, args) -> int:
-    return deps.install()
-
-
-def cmd_run(deps: DepsManager, args) -> int:
-    return deps.run(args.exe, *args.args)
-
-
-def cmd_version(deps: DepsManager, args) -> int:
-    from . import __version__
-    print(__version__, file=deps.stream)
-    return 0
-
-
-def get_envs() -> typing.Optional[typing.List[str]]:
-    path = Path('pyproject.toml')
-    if not path.exists():
-        return None
-    with path.open('r', encoding='utf-8') as stream:
-        pyproject = toml.load(stream)
-    try:
-        meta = pyproject['tool']['flit']['metadata']
-    except KeyError:
-        return None
-    try:
-        envs = meta['requires-extra']
-    except KeyError:
-        return [MAIN_ENV]
-    return [MAIN_ENV, *sorted(envs)]
-
-
-def main(argv: typing.List[str], stream: typing.TextIO) -> int:
-
-    parser = ArgumentParser()
-    parser.add_argument('env', choices=get_envs())
+def main(argv: list[str], stdout: typing.TextIO) -> int:
+    parser = ArgumentParser('mypy-baseline')
     parser.add_argument('--root', type=Path, default=Path())
-    parser.add_argument('--venvs', type=Path)
-    subparsers = parser.add_subparsers(dest='cmd')
+    subparsers = parser.add_subparsers()
+    parser.set_defaults(cmd=None)
 
-    lock_parser = subparsers.add_parser(
-        name='lock',
-        help='lock env dependencies',
-    )
-    lock_parser.add_argument('-c', '--constraint')
-    lock_parser.set_defaults(func=cmd_lock)
-
-    install_parser = subparsers.add_parser(
-        name='install',
-        help='install env dependencies',
-    )
-    install_parser.set_defaults(func=cmd_install)
-
-    run_parser = subparsers.add_parser(
-        name='run',
-        help='run a command inside the env',
-    )
-    run_parser.add_argument('exe')
-    run_parser.add_argument('args', nargs='...')
-    run_parser.set_defaults(func=cmd_run)
-
-    version_parser = subparsers.add_parser(
-        name='version',
-        help='print flitenv version and exit',
-    )
-    version_parser.set_defaults(func=cmd_version)
-
+    cmd_class: type[Command]
+    for name, cmd_class in sorted(commands.items()):
+        subparser = subparsers.add_parser(name=name, help=cmd_class.__doc__)
+        subparser.set_defaults(cmd=cmd_class)
+        cmd_class.init_parser(subparser)
     args = parser.parse_args(argv)
-    if args.cmd is None:
-        print('command required', file=stream)
+
+    cmd_class = args.cmd
+    if cmd_class is None:
+        parser.print_help()
         return 1
-    venv = VEnv(
-        name=args.env,
-        root=args.root,
-        venvs=args.venvs,
-    )
-    deps = DepsManager(
-        root=args.root,
-        venv=venv,
-        stream=stream,
-    )
-    return args.func(deps=deps, args=args)
+    cmd = cmd_class(args=args, stdout=stdout)
+    return cmd.run()
 
 
 def entrypoint() -> typing.NoReturn:
-    sys.exit(main(sys.argv[1:], stream=sys.stdout))
+    sys.exit(main(sys.argv[1:], stdout=sys.stdout))

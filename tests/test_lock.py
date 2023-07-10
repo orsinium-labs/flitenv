@@ -7,8 +7,8 @@ from flitenv._cli import main
 
 
 def test_lock_main(project: Path) -> None:
-    cmd = ['--root', str(project), 'main', 'lock']
-    main(argv=cmd, stream=sys.stdout)
+    cmd = ['--root', str(project), 'lock', 'main']
+    main(argv=cmd, stdout=sys.stdout)
     print(list(project.iterdir()))
     path = project / 'requirements.txt'
     assert path.is_file()
@@ -18,8 +18,8 @@ def test_lock_main(project: Path) -> None:
 
 
 def test_lock_test(project: Path) -> None:
-    cmd = ['--root', str(project), 'test', 'lock']
-    main(argv=cmd, stream=sys.stdout)
+    cmd = ['--root', str(project), 'lock', 'test']
+    main(argv=cmd, stdout=sys.stdout)
     print(list(project.iterdir()))
     path = project / 'requirements-test.txt'
     assert path.is_file()
