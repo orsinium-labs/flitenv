@@ -81,14 +81,18 @@ class DepsManager:
             return int(exc.code or 0)
         return 0
 
-    def run(self, exe, *cmd: str) -> int:
+    def run(self, exe: str, *cmd: str) -> int:
         bin_path = self.venv.bin_path
         if not bin_path:
             code = self.install()
             if code != 0:
                 return code
 
-        full_cmd = [str(self.venv.bin_path / exe)]
+        exe_path = self.venv.bin_path / exe
+        if exe_path.exists():
+            full_cmd = [str(exe_path)]
+        else:
+            full_cmd = [str(self.venv.python_path), '-m', exe]
         full_cmd.extend(cmd)
         result = subprocess.run(full_cmd)
         return result.returncode
