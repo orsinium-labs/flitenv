@@ -1,5 +1,5 @@
 # https://taskfile.dev/#/
-version: '3'
+version: "3"
 
 vars:
   PYTHON: python3
@@ -17,6 +17,8 @@ tasks:
   install:test:
     sources:
       - pyproject.toml
+    status:
+      - test -f .venvs/test/bin/pytest
     deps:
       - install:base
     cmds:
@@ -27,3 +29,20 @@ tasks:
       - install:test
     cmds:
       - .venvs/base/bin/python3 -m flitenv test run pytest {{.CLI_ARGS}}
+
+  release:
+    desc: generate and upload a new release
+    deps:
+      - install:base
+    cmds:
+      - which gh
+      - test {{.CLI_ARGS}}
+      - cat flitenv/__init__.py | grep {{.CLI_ARGS}}
+      - rm -rf dist/
+      - .venvs/base/bin/flit build
+      - .venvs/base/bin/flit publish
+      - git tag {{.CLI_ARGS}}
+      - git push
+      - git push --tags
+      - gh release create --generate-notes {{.CLI_ARGS}}
+      - gh release upload {{.CLI_ARGS}} ./dist/*

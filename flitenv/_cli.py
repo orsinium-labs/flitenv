@@ -5,24 +5,26 @@ from pathlib import Path
 
 import toml
 
-from ._core import Env, MAIN_ENV
+from ._constants import MAIN_ENV
+from ._deps_manager import DepsManager
+from ._venv import VEnv
 
 
-def cmd_lock(env: Env, args) -> int:
-    return env.lock(constraint=args.constraint)
+def cmd_lock(deps: DepsManager, args) -> int:
+    return deps.lock(constraint=args.constraint)
 
 
-def cmd_install(env: Env, args) -> int:
-    return env.install()
+def cmd_install(deps: DepsManager, args) -> int:
+    return deps.install()
 
 
-def cmd_run(env: Env, args) -> int:
-    return env.run(args.exe, *args.args)
+def cmd_run(deps: DepsManager, args) -> int:
+    return deps.run(args.exe, *args.args)
 
 
-def cmd_version(env: Env, args) -> int:
+def cmd_version(deps: DepsManager, args) -> int:
     from . import __version__
-    print(__version__, file=env.stream)
+    print(__version__, file=deps.stream)
     return 0
 
 
@@ -49,7 +51,7 @@ def main(argv: typing.List[str], stream: typing.TextIO) -> int:
     parser.format_help
     parser.add_argument('env', choices=get_envs())  # type: ignore
     parser.add_argument('--root', type=Path, default=Path())
-    parser.add_argument('--venvs', default='.venvs')
+    parser.add_argument('--venvs', type=Path)
     subparsers = parser.add_subparsers(dest='cmd')
 
     lock_parser = subparsers.add_parser(
@@ -83,13 +85,17 @@ def main(argv: typing.List[str], stream: typing.TextIO) -> int:
     if args.cmd is None:
         print('command required', file=stream)
         return 1
-    env = Env(
+    venv = VEnv(
         name=args.env,
         root=args.root,
         venvs=args.venvs,
+    )
+    deps = DepsManager(
+        root=args.root,
+        venv=venv,
         stream=stream,
     )
-    return args.func(env=env, args=args)
+    return args.func(deps=deps, args=args)
 
 
 def entrypoint() -> typing.NoReturn:
