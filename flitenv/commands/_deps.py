@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from argparse import ArgumentParser
 import json
+from argparse import ArgumentParser
 
-from .._meta import get_envs, get_deps
+from .._meta import get_deps, get_envs
 from ._base import Command
 
 

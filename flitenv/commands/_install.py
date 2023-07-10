@@ -19,6 +19,10 @@ class Install(Command):
             'env', choices=get_envs(), nargs='?',
             help='The environment in which to install deps.',
         )
+        parser.add_argument(
+            '-f', '--force', action='store_true',
+            help='try to install dependencies even if up to date',
+        )
 
     def run(self) -> int:
         venv = VEnv(
@@ -31,4 +35,7 @@ class Install(Command):
             venv=venv,
             stream=self.stdout,
         )
+        if not self.args.force and deps.synced:
+            self.print('Already in sync')
+            return 0
         return deps.install()
