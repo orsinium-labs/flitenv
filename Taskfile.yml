@@ -3,6 +3,7 @@ version: "3"
 
 vars:
   PYTHON: python3
+  FLITENV: .venvs/base/bin/python3 -m flitenv
 env:
   FLIT_ROOT_INSTALL: "1"
 
@@ -22,27 +23,96 @@ tasks:
     deps:
       - install:base
     cmds:
-      - .venvs/base/bin/python3 -m flitenv test install
-  pytest:run:
-    desc: "run Python tests"
+      - "{{.FLITENV}} test install"
+  install:lint:
+    sources:
+      - pyproject.toml
+    status:
+      - test -f .venvs/lint/bin/flake8
     deps:
-      - install:test
+      - install:base
     cmds:
-      - .venvs/base/bin/python3 -m flitenv test run pytest {{.CLI_ARGS}}
+      - "{{.FLITENV}} lint install"
 
   release:
     desc: generate and upload a new release
-    deps:
-      - install:base
     cmds:
       - which gh
       - test {{.CLI_ARGS}}
       - cat flitenv/__init__.py | grep {{.CLI_ARGS}}
       - rm -rf dist/
-      - .venvs/base/bin/flit build
-      - .venvs/base/bin/flit publish
+      - flit build
+      - flit publish
       - git tag {{.CLI_ARGS}}
       - git push
       - git push --tags
       - gh release create --generate-notes {{.CLI_ARGS}}
       - gh release upload {{.CLI_ARGS}} ./dist/*
+
+  pytest:
+    desc: "run Python tests"
+    deps:
+      - install:test
+    cmds:
+      - "{{.FLITENV}} test run pytest {{.CLI_ARGS}}"
+  flake8:
+    desc: "lint Python code"
+    deps:
+      - install:lint
+    cmds:
+      - "{{.FLITENV}} lint run flake8 {{.CLI_ARGS}} ."
+  ruff:
+    desc: "lint Python code"
+    deps:
+      - install:lint
+    cmds:
+      - "{{.FLITENV}} lint run ruff check {{.CLI_ARGS}} ."
+  ruff:fix:
+    desc: "fix all possible ruff violations"
+    deps:
+      - install:lint
+    cmds:
+      - "{{.FLITENV}} lint run ruff check --fix-only {{.CLI_ARGS}} ."
+
+  mypy:
+    desc: "check type annotations"
+    deps:
+      - install:lint
+    cmds:
+      - "{{.FLITENV}} lint run mypy {{.CLI_ARGS}}"
+  isort:
+    desc: "sort imports"
+    deps:
+      - install:lint
+    cmds:
+      - "{{.FLITENV}} lint run isort {{.CLI_ARGS}} ."
+  isort:check:
+    desc: "sort imports"
+    deps:
+      - install:lint
+    cmds:
+      - "{{.FLITENV}} lint run isort --check {{.CLI_ARGS}} ."
+
+  # groups
+  format:
+    desc: "run all code formatters"
+    cmds:
+      - task: isort
+      - task: ruff:fix
+  lint:
+    desc: "run all linters"
+    cmds:
+      - task: ruff
+      - task: flake8
+      - task: mypy
+      - task: isort:check
+  test:
+    desc: "run all tests"
+    cmds:
+      - task: pytest
+  all:
+    desc: "run all code formatters, linters, and tests"
+    cmds:
+      - task: format
+      - task: lint
+      - task: test

@@ -34,6 +34,7 @@ lint = [
     "isort",
     "mypy",
     "types-toml",
+    "ruff",
 ]
 test = [
     "pytest",
@@ -46,3 +47,32 @@ flitenv = "flitenv:entrypoint"
 profile = "django"
 lines_after_imports = 2
 skip = ".venvs/"
+
+[tool.mypy]
+files = ["flitenv", "tests"]
+python_version = "3.8"
+ignore_missing_imports = true
+# follow_imports = "silent"
+show_error_codes = true
+check_untyped_defs = true
+no_implicit_optional = true
+strict_equality = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+[tool.ruff]
+select = [
+    "E", "W", "F", "N", "B",
+    "COM", "ISC", "PIE", "Q",
+    "SIM", "PTH", "PL", "RUF",
+]
+ignore = [
+    "PLR2004",  # allow hardcoded constants
+    "SIM117",   # allow nested with
+    "SIM105",   # allow try-except-pass
+    "PIE790",   # allow unnecessary pass statements
+]
+target-version = "py38"
+
+[tool.ruff.flake8-quotes]
+inline-quotes = "single"
