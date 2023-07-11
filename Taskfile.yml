@@ -36,44 +36,44 @@ tasks:
     deps:
       - install:base
     cmds:
-      - "{{.FLITENV}} run test pytest {{.CLI_ARGS}}"
+      - "{{.FLITENV}} run pytest {{.CLI_ARGS}}"
   flake8:
     desc: "lint Python code"
     deps:
       - install:base
     cmds:
-      - "{{.FLITENV}} run lint flake8 {{.CLI_ARGS}} ."
+      - "{{.FLITENV}} run flake8 {{.CLI_ARGS}} ."
   ruff:
     desc: "lint Python code"
     deps:
       - install:base
     cmds:
-      - "{{.FLITENV}} run lint ruff check {{.CLI_ARGS}} ."
+      - "{{.FLITENV}} run ruff check {{.CLI_ARGS}} ."
   ruff:fix:
     desc: "fix all possible ruff violations"
     deps:
       - install:base
     cmds:
-      - "{{.FLITENV}} run lint ruff check --fix-only {{.CLI_ARGS}} ."
+      - "{{.FLITENV}} run ruff check --fix-only {{.CLI_ARGS}} ."
 
   mypy:
     desc: "check type annotations"
     deps:
       - install:base
     cmds:
-      - "{{.FLITENV}} run lint mypy {{.CLI_ARGS}}"
+      - "{{.FLITENV}} run mypy {{.CLI_ARGS}}"
   isort:
     desc: "sort imports"
     deps:
       - install:base
     cmds:
-      - "{{.FLITENV}} run lint isort {{.CLI_ARGS}} ."
+      - "{{.FLITENV}} run isort {{.CLI_ARGS}} ."
   isort:check:
     desc: "sort imports"
     deps:
       - install:base
     cmds:
-      - "{{.FLITENV}} run lint isort --check {{.CLI_ARGS}} ."
+      - "{{.FLITENV}} run isort --check {{.CLI_ARGS}} ."
 
   # groups
   format:
